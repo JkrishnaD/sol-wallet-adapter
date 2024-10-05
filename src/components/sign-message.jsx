@@ -13,7 +13,7 @@ export const SignMessage = () => {
     const encodeMessage = new TextEncoder().encode(message);
     const signature = await signMessage(encodeMessage);
 
-    if (!ed25519.verify(signature, encodeMessage, publicKey.toBase58))
+    if (!ed25519.verify(signature, encodeMessage, publicKey?.toBase58()))
       throw new Error("Message Signature Invalid");
 
     alert(`Message Signature:${bs58.encode(signature)}`);

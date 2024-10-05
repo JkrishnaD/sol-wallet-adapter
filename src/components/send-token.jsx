@@ -5,28 +5,36 @@ import {
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
+import { useState } from "react";
 
 export const SendToken = () => {
   const wallet = useWallet();
   const { connection } = useConnection();
   const publicKey = wallet.publicKey?.toBase58();
+  const [isSending, setIsSending] = useState(false);
 
   const sendAmount = async () => {
-    let to = document.getElementById("to").value;
-    let amount = document.getElementById("amount").value;
+    try {
+      setIsSending(true);
+      let to = document.getElementById("to").value;
+      let amount = document.getElementById("amount").value;
 
-    const transaction = new Transaction();
+      const transaction = new Transaction();
 
-    transaction.add(
-      SystemProgram.transfer({
-        fromPubkey: wallet.publicKey,
-        toPubkey: new PublicKey(to),
-        lamports: amount * LAMPORTS_PER_SOL,
-      })
-    );
-
-    await wallet.sendTransaction(transaction, connection);
-    alert("Done");
+      transaction.add(
+        SystemProgram.transfer({
+          fromPubkey: wallet.publicKey,
+          toPubkey: new PublicKey(to),
+          lamports: amount * LAMPORTS_PER_SOL,
+        })
+      );
+      await wallet.sendTransaction(transaction, connection);
+      alert("Done");
+    } catch (error) {
+      alert("Error while transfering");
+    } finally {
+      setIsSending(false);
+    }
   };
   return (
     <div className="flex flex-col space-y-2 items-center justify-center">
@@ -52,7 +60,7 @@ export const SendToken = () => {
             onClick={sendAmount}
             className="p-2 bg-purple-500 text-white hover:bg-opacity-75 rounded-lg"
           >
-            Send
+            {isSending ? "Sending..." : "Send"}
           </button>
         </>
       ) : null}

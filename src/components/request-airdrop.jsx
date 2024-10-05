@@ -3,14 +3,25 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useState } from "react";
 
 export const RequestAirdrop = () => {
-  const wallet = useWallet();
+  const { publicKey } = useWallet();
   const { connection } = useConnection();
-  const publicKey = wallet.publicKey;
+  const [isAirdropping, setIsAirdropping] = useState(false);
 
   async function requestAirdrop() {
     const amount = document.getElementById("amount").value;
-    await connection.requestAirdrop(publicKey, amount * LAMPORTS_PER_SOL);
-    alert("Sol Airdropped");
+    try {
+      setIsAirdropping(true);
+      await connection.requestAirdrop(publicKey, amount * LAMPORTS_PER_SOL);
+      alert("Sol Airdropped");
+    } catch (error) {
+      if (error.message.includes("429")) {
+        alert("Rate limit exceeded, please try again later.");
+      } else {
+        alert("Error requesting airdrop: " + error.message);
+      }
+    } finally {
+      setIsAirdropping(false);
+    }
   }
 
   return (
@@ -30,14 +41,13 @@ export const RequestAirdrop = () => {
           />
           <button
             onClick={requestAirdrop}
+            disabled={isAirdropping}
             className="p-2 bg-purple-500 text-white hover:bg-opacity-75 rounded-lg"
           >
-            Request Airdrop
+            {isAirdropping ? "isAirdropping..." : "Request Airdrop"}
           </button>
         </>
-      ) : (
-        null
-      )}
+      ) : null}
     </div>
   );
 };
